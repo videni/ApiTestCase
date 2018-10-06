@@ -40,7 +40,16 @@
         "theofidry/alice-data-fixtures": "^1.0"
     },
     "require-dev": {
-        "symfony/serializer": "^3.4|^4.0"
+        "symfony/serializer": "^3.4|^4.0",
+        "sylius-labs/coding-standard": "^2.0"
+    },
+    "scripts": {
+        "fix": [
+            "vendor/bin/ecs check --ansi --no-progress-bar src test/src --fix"
+        ],
+        "analyse": [
+            "vendor/bin/ecs check --ansi --no-progress-bar src test/src"
+        ]
     },
     "conflict": {
         "symfony/dependency-injection": "4.1.0"
