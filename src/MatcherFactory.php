@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the ApiTestCase package.
  *
@@ -11,7 +13,6 @@
 
 namespace ApiTestCase;
 
-use Coduo\PHPMatcher\Factory;
 use Coduo\PHPMatcher\Lexer;
 use Coduo\PHPMatcher\Matcher;
 use Coduo\PHPMatcher\Parser;
@@ -42,9 +43,9 @@ class MatcherFactory
     protected static function buildMatcher($matcherClass)
     {
         $orMatcher = self::buildOrMatcher();
-        $chainMatcher = new Matcher\ChainMatcher(array(
+        $chainMatcher = new Matcher\ChainMatcher([
             new $matcherClass($orMatcher),
-        ));
+        ]);
 
         return new Matcher($chainMatcher);
     }
@@ -57,17 +58,17 @@ class MatcherFactory
         $scalarMatchers = self::buildScalarMatchers();
         $orMatcher = new Matcher\OrMatcher($scalarMatchers);
         $arrayMatcher = new Matcher\ArrayMatcher(
-            new Matcher\ChainMatcher(array(
+            new Matcher\ChainMatcher([
                 $orMatcher,
-                $scalarMatchers
-            )),
+                $scalarMatchers,
+            ]),
             self::buildParser()
         );
 
-        $chainMatcher = new Matcher\ChainMatcher(array(
+        $chainMatcher = new Matcher\ChainMatcher([
             $orMatcher,
             $arrayMatcher,
-        ));
+        ]);
 
         return $chainMatcher;
     }
@@ -79,7 +80,7 @@ class MatcherFactory
     {
         $parser = self::buildParser();
 
-        return new Matcher\ChainMatcher(array(
+        return new Matcher\ChainMatcher([
             new Matcher\CallbackMatcher(),
             new Matcher\ExpressionMatcher(),
             new Matcher\NullMatcher(),
@@ -89,8 +90,8 @@ class MatcherFactory
             new Matcher\DoubleMatcher($parser),
             new Matcher\NumberMatcher($parser),
             new Matcher\ScalarMatcher(),
-            new Matcher\WildcardMatcher()
-        ));
+            new Matcher\WildcardMatcher(),
+        ]);
     }
 
     /**

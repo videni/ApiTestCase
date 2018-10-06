@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /*
  * This file is part of the ApiTestCase package.
  *
@@ -17,10 +19,10 @@ use Doctrine\ORM\EntityManager;
 use Fidry\AliceDataFixtures\LoaderInterface;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DependencyInjection\ResettableContainerInterface;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Kernel;
-use Symfony\Component\DependencyInjection\ResettableContainerInterface;
 
 abstract class ApiTestCase extends WebTestCase
 {
@@ -215,9 +217,9 @@ abstract class ApiTestCase extends WebTestCase
     protected function showErrorInBrowserIfOccurred(Response $response)
     {
         if (!$response->isSuccessful()) {
-            $openCommand = isset($_SERVER['OPEN_BROWSER_COMMAND']) ? $_SERVER['OPEN_BROWSER_COMMAND'] : 'open %s';
-            $tmpDir = isset($_SERVER['TMP_DIR']) ? $_SERVER['TMP_DIR'] : sys_get_temp_dir();
-            
+            $openCommand = $_SERVER['OPEN_BROWSER_COMMAND'] ?? 'open %s';
+            $tmpDir = $_SERVER['TMP_DIR'] ?? sys_get_temp_dir();
+
             $filename = PathBuilder::build(rtrim($tmpDir, \DIRECTORY_SEPARATOR), uniqid() . '.html');
             file_put_contents($filename, $response->getContent());
             system(sprintf($openCommand, escapeshellarg($filename)));
@@ -287,7 +289,7 @@ abstract class ApiTestCase extends WebTestCase
      */
     protected function loadFixturesFromFiles(array $sources)
     {
-        $realPaths = array();
+        $realPaths = [];
 
         foreach ($sources as $source) {
             $source = $this->getFixtureRealPath($source);
@@ -342,7 +344,7 @@ abstract class ApiTestCase extends WebTestCase
     {
         if (null === $this->dataFixturesPath) {
             $this->dataFixturesPath = isset($_SERVER['FIXTURES_DIR']) ?
-                PathBuilder::build($this->getRootDir(), $_SERVER['FIXTURES_DIR'] ) :
+                PathBuilder::build($this->getRootDir(), $_SERVER['FIXTURES_DIR']) :
                 PathBuilder::build($this->getCalledClassFolder(), '..', 'DataFixtures', 'ORM');
         }
 
