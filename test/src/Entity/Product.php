@@ -15,57 +15,36 @@ namespace ApiTestCase\Test\Entity;
 
 class Product
 {
-    /**
-     * @var mixed
-     */
+    /** @var int|null */
     private $id;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     private $name;
 
-    /**
-     * @var int
-     */
+    /** @var int */
     private $price;
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @param string $name
-     */
-    public function setName($name)
+    public function setName(string $name): void
     {
         $this->name = $name;
     }
 
-    /**
-     * @return int
-     */
-    public function getPrice()
+    public function getPrice(): int
     {
         return $this->price;
     }
 
-    /**
-     * @param int $price
-     */
-    public function setPrice($price)
+    public function setPrice(int $price): void
     {
         $this->price = $price;
     }

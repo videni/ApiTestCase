@@ -17,7 +17,7 @@ use ApiTestCase\XmlApiTestCase;
 
 class SampleControllerXmlTest extends XmlApiTestCase
 {
-    public function testGetHelloWorldResponse()
+    public function testGetHelloWorldResponse(): void
     {
         $this->client->request('GET', '/');
 
@@ -29,7 +29,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
     /**
      * @expectedException \PHPUnit\Framework\AssertionFailedError
      */
-    public function testGetHelloWorldIncorrectResponse()
+    public function testGetHelloWorldIncorrectResponse(): void
     {
         $this->client->request('GET', '/');
 
@@ -38,7 +38,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
         $this->assertResponse($response, 'incorrect_hello_world');
     }
 
-    public function testGetHelloWorldWithMatcherResponse()
+    public function testGetHelloWorldWithMatcherResponse(): void
     {
         $this->client->request('GET', '/');
 
@@ -47,7 +47,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
         $this->assertResponse($response, 'hello_matcher_world');
     }
 
-    public function testGetHelloWorldWithWildCardResponse()
+    public function testGetHelloWorldWithWildCardResponse(): void
     {
         $this->client->request('GET', '/');
 
@@ -56,7 +56,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
         $this->assertResponse($response, 'hello_wild_card');
     }
 
-    public function testGetProductInventoryFromThirdPartyApi()
+    public function testGetProductInventoryFromThirdPartyApi(): void
     {
         $this->client->getContainer()->mock('app.third_party_api_client', 'ApiTestCase\Test\Service\ThirdPartyApiClient')
             ->shouldReceive('getInventory')
@@ -71,7 +71,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
         $this->assertResponse($response, 'use_third_party_api');
     }
 
-    public function testProductIndexResponse()
+    public function testProductIndexResponse(): void
     {
         $this->loadFixturesFromDirectory();
 
@@ -82,7 +82,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
         $this->assertResponse($response, 'product_index');
     }
 
-    public function testCategoriesIndexResponse()
+    public function testCategoriesIndexResponse(): void
     {
         $this->loadFixturesFromFiles(['product.yml', 'category.yml']);
 
@@ -93,7 +93,7 @@ class SampleControllerXmlTest extends XmlApiTestCase
         $this->assertResponse($response, 'category_index');
     }
 
-    public function testProductShowResponse()
+    public function testProductShowResponse(): void
     {
         $objects = $this->loadFixturesFromDirectory();
 

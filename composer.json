@@ -41,7 +41,7 @@
     },
     "require-dev": {
         "symfony/serializer": "^3.4|^4.0",
-        "sylius-labs/coding-standard": "^2.0"
+        "sylius-labs/coding-standard": "^3.0"
     },
     "scripts": {
         "fix": [

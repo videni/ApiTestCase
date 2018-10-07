@@ -19,28 +19,17 @@ use Coduo\PHPMatcher\Parser;
 
 class MatcherFactory
 {
-    /**
-     * @return Matcher
-     */
-    public static function buildXmlMatcher()
+    public static function buildXmlMatcher(): Matcher
     {
         return self::buildMatcher(Matcher\XmlMatcher::class);
     }
 
-    /**
-     * @return Matcher
-     */
-    public static function buildJsonMatcher()
+    public static function buildJsonMatcher(): Matcher
     {
         return self::buildMatcher(Matcher\JsonMatcher::class);
     }
 
-    /**
-     * @param string $matcherClass
-     *
-     * @return Matcher
-     */
-    protected static function buildMatcher($matcherClass)
+    protected static function buildMatcher(string $matcherClass): Matcher
     {
         $orMatcher = self::buildOrMatcher();
         $chainMatcher = new Matcher\ChainMatcher([
@@ -50,10 +39,7 @@ class MatcherFactory
         return new Matcher($chainMatcher);
     }
 
-    /**
-     * @return Matcher\ChainMatcher
-     */
-    protected static function buildOrMatcher()
+    protected static function buildOrMatcher(): Matcher\ChainMatcher
     {
         $scalarMatchers = self::buildScalarMatchers();
         $orMatcher = new Matcher\OrMatcher($scalarMatchers);
@@ -65,18 +51,13 @@ class MatcherFactory
             self::buildParser()
         );
 
-        $chainMatcher = new Matcher\ChainMatcher([
+        return new Matcher\ChainMatcher([
             $orMatcher,
             $arrayMatcher,
         ]);
-
-        return $chainMatcher;
     }
 
-    /**
-     * @return Matcher\ChainMatcher
-     */
-    protected static function buildScalarMatchers()
+    protected static function buildScalarMatchers(): Matcher\ChainMatcher
     {
         $parser = self::buildParser();
 
@@ -94,10 +75,7 @@ class MatcherFactory
         ]);
     }
 
-    /**
-     * @return Parser
-     */
-    protected static function buildParser()
+    protected static function buildParser(): Parser
     {
         return new Parser(new Lexer(), new Parser\ExpanderInitializer());
     }

@@ -17,6 +17,7 @@ use Coduo\PHPMatcher\Matcher;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\ORM\EntityManager;
 use Fidry\AliceDataFixtures\LoaderInterface;
+use Fidry\AliceDataFixtures\ProcessorInterface;
 use Symfony\Bundle\FrameworkBundle\Client;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\DependencyInjection\ResettableContainerInterface;
@@ -26,45 +27,31 @@ use Symfony\Component\HttpKernel\Kernel;
 
 abstract class ApiTestCase extends WebTestCase
 {
-    /**
-     * @var Kernel
-     */
+    /** @var Kernel */
     protected static $sharedKernel;
 
-    /**
-     * @var Client
-     */
+    /** @var Client */
     protected $client;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $expectedResponsesPath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $mockedResponsesPath;
 
-    /**
-     * @var string
-     */
+    /** @var string */
     protected $dataFixturesPath;
 
-    /**
-     * @var LoaderInterface
-     */
+    /** @var LoaderInterface */
     private $fixtureLoader;
 
-    /**
-     * @var EntityManager
-     */
+    /** @var EntityManager */
     private $entityManager;
 
     /**
      * @beforeClass
      */
-    public static function createSharedKernel()
+    public static function createSharedKernel(): void
     {
         static::$sharedKernel = static::createKernel(['debug' => false]);
         static::$sharedKernel->boot();
@@ -73,7 +60,7 @@ abstract class ApiTestCase extends WebTestCase
     /**
      * @afterClass
      */
-    public static function ensureSharedKernelShutdown()
+    public static function ensureSharedKernelShutdown(): void
     {
         if (null !== static::$sharedKernel) {
             $container = static::$sharedKernel->getContainer();
@@ -87,7 +74,7 @@ abstract class ApiTestCase extends WebTestCase
     /**
      * @before
      */
-    public function setUpClient()
+    public function setUpClient(): void
     {
         $this->client = static::createClient(['debug' => false]);
     }
@@ -95,7 +82,7 @@ abstract class ApiTestCase extends WebTestCase
     /**
      * @before
      */
-    public function setUpDatabase()
+    public function setUpDatabase(): void
     {
         if (isset($_SERVER['IS_DOCTRINE_ORM_SUPPORTED']) && $_SERVER['IS_DOCTRINE_ORM_SUPPORTED']) {
             $this->entityManager = static::$sharedKernel->getContainer()->get('doctrine.orm.entity_manager');
@@ -107,10 +94,10 @@ abstract class ApiTestCase extends WebTestCase
         }
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         if (null !== $this->client && null !== $this->client->getContainer()) {
-            foreach ($this->client->getContainer()->getMockedServices() as $id => $service) {
+            foreach (array_keys($this->client->getContainer()->getMockedServices()) as $id) {
                 $this->client->getContainer()->unmock($id);
             }
         }
@@ -123,20 +110,17 @@ abstract class ApiTestCase extends WebTestCase
         parent::tearDown();
     }
 
-    /**
-     * @return Matcher
-     */
-    abstract protected function buildMatcher();
+    abstract protected function buildMatcher(): Matcher;
 
     /**
-     * return ProcessorInterface[]
+     * @return array|ProcessorInterface[]
      */
-    protected function getFixtureProcessors()
+    protected function getFixtureProcessors(): array
     {
         return [];
     }
 
-    protected static function getKernelClass()
+    protected static function getKernelClass(): string
     {
         if (isset($_SERVER['KERNEL_CLASS'])) {
             return '\\' . ltrim($_SERVER['KERNEL_CLASS'], '\\');
@@ -145,7 +129,7 @@ abstract class ApiTestCase extends WebTestCase
         return parent::getKernelClass();
     }
 
-    protected function purgeDatabase()
+    protected function purgeDatabase(): void
     {
         $purger = new ORMPurger($this->getEntityManager());
         $purger->purge();
@@ -155,44 +139,26 @@ abstract class ApiTestCase extends WebTestCase
 
     /**
      * Gets service from DIC.
-     *
-     * @param string $id
-     *
-     * @return object
      */
-    protected function get($id)
+    protected function get(string $id): object
     {
         return $this->client->getContainer()->get($id);
     }
 
-    /**
-     * @param Response $response
-     * @param int $statusCode
-     */
-    protected function assertResponseCode(Response $response, $statusCode)
+    protected function assertResponseCode(Response $response, int $statusCode): void
     {
         self::assertEquals($statusCode, $response->getStatusCode(), $response->getContent());
     }
 
-    /**
-     * @param Response $response
-     * @param string $contentType
-     */
-    protected function assertHeader(Response $response, $contentType)
+    protected function assertHeader(Response $response, string $contentType): void
     {
         self::assertContains(
             $contentType,
-            $response->headers->get('Content-Type'),
-            $response->headers
+            $response->headers->get('Content-Type')
         );
     }
 
-    /**
-     * @param string $actualResponse
-     * @param string $filename
-     * @param string $mimeType
-     */
-    protected function assertResponseContent($actualResponse, $filename, $mimeType)
+    protected function assertResponseContent(string $actualResponse, string $filename, string $mimeType): void
     {
         $responseSource = $this->getExpectedResponsesFolder();
 
@@ -203,18 +169,16 @@ abstract class ApiTestCase extends WebTestCase
         $result = $matcher->match($actualResponse, $expectedResponse);
 
         if (!$result) {
-            $diff = new \Diff(explode(PHP_EOL, $expectedResponse), explode(PHP_EOL, $actualResponse), []);
+            $diff = new \Diff(explode(\PHP_EOL, $expectedResponse), explode(\PHP_EOL, $actualResponse), []);
 
-            self::fail($matcher->getError() . PHP_EOL . $diff->render(new \Diff_Renderer_Text_Unified()));
+            self::fail($matcher->getError() . \PHP_EOL . $diff->render(new \Diff_Renderer_Text_Unified()));
         }
     }
 
     /**
-     * @param Response $response
-     *
      * @throws \Exception
      */
-    protected function showErrorInBrowserIfOccurred(Response $response)
+    protected function showErrorInBrowserIfOccurred(Response $response): void
     {
         if (!$response->isSuccessful()) {
             $openCommand = $_SERVER['OPEN_BROWSER_COMMAND'] ?? 'open %s';
@@ -231,25 +195,16 @@ abstract class ApiTestCase extends WebTestCase
     /**
      * Provides array from decoded json file. Requires MOCKED_RESPONSE_DIR defined variable to work properly.
      *
-     * @param string $filename
-     *
-     * @return array
-     *
      * @throws \Exception
      */
-    protected function getJsonResponseFixture($filename)
+    protected function getJsonResponseFixture(string $filename): array
     {
         $responseSource = $this->getMockedResponsesFolder();
 
         return json_decode(file_get_contents(PathBuilder::build($responseSource, $filename . '.json')), true);
     }
 
-    /**
-     * @param string $source
-     *
-     * @return array
-     */
-    protected function loadFixturesFromDirectory($source = '')
+    protected function loadFixturesFromDirectory(string $source = ''): array
     {
         $source = $this->getFixtureRealPath($source);
         $this->assertSourceExists($source);
@@ -269,12 +224,7 @@ abstract class ApiTestCase extends WebTestCase
         return $this->getFixtureLoader()->load($files);
     }
 
-    /**
-     * @param string $source
-     *
-     * @return array
-     */
-    protected function loadFixturesFromFile($source)
+    protected function loadFixturesFromFile(string $source): array
     {
         $source = $this->getFixtureRealPath($source);
         $this->assertSourceExists($source);
@@ -283,11 +233,11 @@ abstract class ApiTestCase extends WebTestCase
     }
 
     /**
-     * @param array $sources
+     * @param array|string[] $sources
      *
-     * @return array
+     * @return array|object[]
      */
-    protected function loadFixturesFromFiles(array $sources)
+    protected function loadFixturesFromFiles(array $sources): array
     {
         $realPaths = [];
 
@@ -301,10 +251,7 @@ abstract class ApiTestCase extends WebTestCase
         return $this->getFixtureLoader()->load($realPaths);
     }
 
-    /**
-     * @return LoaderInterface
-     */
-    protected function getFixtureLoader()
+    protected function getFixtureLoader(): LoaderInterface
     {
         if (null === $this->fixtureLoader) {
             throw new \RuntimeException('Please, set up a database before you will try to use a fixture loader');
@@ -313,10 +260,7 @@ abstract class ApiTestCase extends WebTestCase
         return $this->fixtureLoader;
     }
 
-    /**
-     * @return EntityManager
-     */
-    protected function getEntityManager()
+    protected function getEntityManager(): EntityManager
     {
         if (null === $this->entityManager || !$this->entityManager->getConnection()->isConnected()) {
             static::fail('Could not establish test database connection.');
@@ -325,22 +269,14 @@ abstract class ApiTestCase extends WebTestCase
         return $this->entityManager;
     }
 
-    /**
-     * @param string $source
-     *
-     * @return string
-     */
-    private function getFixtureRealPath($source)
+    private function getFixtureRealPath(string $source): string
     {
         $baseDirectory = $this->getFixturesFolder();
 
         return PathBuilder::build($baseDirectory, $source);
     }
 
-    /**
-     * @return string
-     */
-    private function getFixturesFolder()
+    private function getFixturesFolder(): string
     {
         if (null === $this->dataFixturesPath) {
             $this->dataFixturesPath = isset($_SERVER['FIXTURES_DIR']) ?
@@ -351,10 +287,7 @@ abstract class ApiTestCase extends WebTestCase
         return $this->dataFixturesPath;
     }
 
-    /**
-     * @return string
-     */
-    private function getExpectedResponsesFolder()
+    private function getExpectedResponsesFolder(): string
     {
         if (null === $this->expectedResponsesPath) {
             $this->expectedResponsesPath = isset($_SERVER['EXPECTED_RESPONSE_DIR']) ?
@@ -365,10 +298,7 @@ abstract class ApiTestCase extends WebTestCase
         return $this->expectedResponsesPath;
     }
 
-    /**
-     * @return string
-     */
-    private function getMockedResponsesFolder()
+    private function getMockedResponsesFolder(): string
     {
         if (null === $this->mockedResponsesPath) {
             $this->mockedResponsesPath = isset($_SERVER['MOCKED_RESPONSE_DIR']) ?
@@ -379,10 +309,7 @@ abstract class ApiTestCase extends WebTestCase
         return $this->mockedResponsesPath;
     }
 
-    /**
-     * @return string
-     */
-    private function getCalledClassFolder()
+    private function getCalledClassFolder(): string
     {
         $calledClass = get_called_class();
         $calledClassFolder = dirname((new \ReflectionClass($calledClass))->getFileName());
@@ -392,20 +319,14 @@ abstract class ApiTestCase extends WebTestCase
         return $calledClassFolder;
     }
 
-    /**
-     * @param string $source
-     */
-    private function assertSourceExists($source)
+    private function assertSourceExists(string $source): void
     {
         if (!file_exists($source)) {
             throw new \RuntimeException(sprintf('File %s does not exist', $source));
         }
     }
 
-    /**
-     * @return string
-     */
-    private function getRootDir()
+    private function getRootDir(): string
     {
         return $this->get('kernel')->getRootDir();
     }
