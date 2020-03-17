@@ -27,14 +27,6 @@ abstract class XmlApiTestCase extends ApiTestCase
     }
 
     /**
-     * {@inheritdoc}
-     */
-    protected function buildMatcher(): Matcher
-    {
-        return $this->matcherFactory->buildXmlMatcher();
-    }
-
-    /**
      * @throws \Exception
      */
     protected function assertResponse(Response $response, string $filename, int $statusCode = 200): void

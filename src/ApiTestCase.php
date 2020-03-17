@@ -26,6 +26,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Webmozart\Assert\Assert;
+use Coduo\PHPMatcher\Factory\MatcherFactory;
 
 abstract class ApiTestCase extends WebTestCase
 {
@@ -44,8 +45,8 @@ abstract class ApiTestCase extends WebTestCase
     /** @var string */
     protected $dataFixturesPath;
 
-    /** @var MatcherFactory */
-    protected $matcherFactory;
+    /** @var Matcher */
+    protected $matcher;
 
     /** @var LoaderInterface|null */
     private $fixtureLoader;
@@ -57,7 +58,7 @@ abstract class ApiTestCase extends WebTestCase
     {
         parent::__construct($name, $data, $dataName);
 
-        $this->matcherFactory = new MatcherFactory();
+        $this->matcher = (new MatcherFactory())->createMatcher();
     }
 
     /**
@@ -138,8 +139,6 @@ abstract class ApiTestCase extends WebTestCase
         parent::tearDown();
     }
 
-    abstract protected function buildMatcher(): Matcher;
-
     /**
      * @return ProcessorInterface[]
      */
@@ -204,14 +203,13 @@ abstract class ApiTestCase extends WebTestCase
 
         $expectedResponse = trim($contents);
 
-        $matcher = $this->buildMatcher();
         $actualResponse = trim($actualResponse);
-        $result = $matcher->match($actualResponse, $expectedResponse);
+        $result = $this->matcher->match($actualResponse, $expectedResponse);
 
         if (!$result) {
             $diff = new \Diff(explode(\PHP_EOL, $expectedResponse), explode(\PHP_EOL, $actualResponse), []);
 
-            self::fail($matcher->getError() . \PHP_EOL . $diff->render(new \Diff_Renderer_Text_Unified()));
+            self::fail($this->matcher->getError() . \PHP_EOL . $diff->render(new \Diff_Renderer_Text_Unified()));
         }
     }
 

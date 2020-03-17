@@ -26,11 +26,6 @@ abstract class JsonApiTestCase extends ApiTestCase
         $this->client = static::createClient([], ['HTTP_ACCEPT' => 'application/json']);
     }
 
-    protected function buildMatcher(): Matcher
-    {
-        return $this->matcherFactory->buildJsonMatcher();
-    }
-
     /**
      * Asserts that response has JSON content.
      * If filename is set, asserts that response content matches the one in given file.
