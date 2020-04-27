@@ -111,7 +111,8 @@ abstract class ApiTestCase extends WebTestCase
             /** @var LoaderInterface $fixtureLoader */
             $fixtureLoader = $container->get('fidry_alice_data_fixtures.loader.doctrine');
             $this->fixtureLoader = $fixtureLoader;
-
+        }
+        if (!isset($_SERVER['NO_PURGE']) || !$_SERVER['NO_PURGE']) {
             $this->purgeDatabase();
         }
     }
